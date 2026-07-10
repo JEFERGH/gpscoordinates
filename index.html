@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Get Coordinates</title>
+</head>
+<body>
+
+<a href="#" onclick="getLocation()">📍 Get My Coordinates</a>
+
+<p id="result"></p>
+
+<script>
+function getLocation() {
+    if (!navigator.geolocation) {
+        document.getElementById("result").innerHTML =
+            "Geolocation is not supported by your browser.";
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            document.getElementById("result").innerHTML =
+                `Latitude: ${latitude}<br>Longitude: ${longitude}`;
+
+            console.log(latitude, longitude);
+        },
+        function(error) {
+            document.getElementById("result").innerHTML =
+                "Unable to retrieve location: " + error.message;
+        }
+    );
+}
+</script>
+
+</body>
+</html>
