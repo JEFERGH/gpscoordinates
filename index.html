@@ -6,76 +6,84 @@
 <title>Get My Coordinates</title>
 
 <style>
-    *{
-        box-sizing:border-box;
-        font-family:Arial, Helvetica, sans-serif;
-    }
+*{
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
 
-    body{
-        margin:0;
-        padding:25px;
-        background:#f5f5f5;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        min-height:100vh;
-    }
+body{
+    margin:0;
+    padding:25px;
+    background:#f5f5f5;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
 
-    .container{
-        width:100%;
-        max-width:500px;
-        background:#fff;
-        padding:30px;
-        border-radius:18px;
-        box-shadow:0 8px 25px rgba(0,0,0,.15);
-        text-align:center;
-    }
+.container{
+    width:100%;
+    max-width:500px;
+    background:#fff;
+    padding:30px;
+    border-radius:18px;
+    box-shadow:0 8px 25px rgba(0,0,0,.15);
+    text-align:center;
+}
 
-    h1{
-        font-size:34px;
-        margin-bottom:30px;
-    }
+.main-btn{
+    width:100%;
+    padding:22px;
+    font-size:28px;
+    font-weight:bold;
+    border:none;
+    border-radius:15px;
+    background:#0d6efd;
+    color:white;
+    cursor:pointer;
+}
 
-    button{
-        width:100%;
-        padding:22px;
-        font-size:28px;
-        font-weight:bold;
-        border:none;
-        border-radius:15px;
-        background:#0d6efd;
-        color:white;
-        cursor:pointer;
-        transition:.2s;
-    }
+.main-btn:hover{
+    background:#0b5ed7;
+}
 
-    button:active{
-        transform:scale(.98);
-    }
+.copy-btn{
+    width:100%;
+    margin-top:20px;
+    padding:18px;
+    font-size:24px;
+    font-weight:bold;
+    border:none;
+    border-radius:15px;
+    background:#198754;
+    color:white;
+    cursor:pointer;
+}
 
-    button:hover{
-        background:#0b5ed7;
-    }
+.copy-btn:disabled{
+    background:#bdbdbd;
+    cursor:not-allowed;
+}
 
-    #result{
-        margin-top:35px;
-        font-size:28px;
-        font-weight:bold;
-        line-height:1.8;
-        word-break:break-word;
-    }
+#result{
+    margin-top:35px;
+    font-size:28px;
+    font-weight:bold;
+    line-height:1.8;
+    word-break:break-word;
+}
 
-    .loading{
-        color:#ff9800;
-    }
+.loading{
+    color:#ff9800;
+}
 
-    .success{
-        color:#198754;
-    }
+.success{
+    color:#198754;
+}
 
-    .error{
-        color:red;
-    }
+.error{
+    color:red;
+}
 </style>
 
 </head>
@@ -83,30 +91,40 @@
 
 <div class="container">
 
-    <h1></h1>
-
-    <button onclick="getLocation()">
-        Get My Coordinates
+    <button class="main-btn" onclick="getLocation()">
+        📍 Get My Coordinates
     </button>
 
     <div id="result"></div>
+
+    <button id="copyBtn"
+            class="copy-btn"
+            onclick="copyCoordinates()"
+            disabled>
+        📋 Copy Coordinates
+    </button>
 
 </div>
 
 <script>
 
-function getLocation() {
+let coordinates = "";
+
+function getLocation(){
 
     const result = document.getElementById("result");
+    const copyBtn = document.getElementById("copyBtn");
 
-    if (!navigator.geolocation) {
-        result.className = "error";
-        result.innerHTML = "Geolocation is not supported by your browser.";
+    copyBtn.disabled = true;
+
+    if(!navigator.geolocation){
+        result.className="error";
+        result.innerHTML="Geolocation is not supported by your browser.";
         return;
     }
 
-    result.className = "loading";
-    result.innerHTML = "Getting your location...";
+    result.className="loading";
+    result.innerHTML="Getting your location...";
 
     navigator.geolocation.getCurrentPosition(
 
@@ -115,21 +133,23 @@ function getLocation() {
             const latitude = position.coords.latitude;
             const longitude = position.coords.longitude;
 
-            result.className = "success";
+            coordinates = `${latitude},${longitude}`;
 
-            result.innerHTML = `
+            result.className="success";
+
+            result.innerHTML=`
                 <div>Coordinates</div>
-                <div>${latitude},${longitude}</div>
+                <div>${coordinates}</div>
             `;
 
-            console.log(latitude, longitude);
+            copyBtn.disabled = false;
 
         },
 
         function(error){
 
-            result.className = "error";
-            result.innerHTML = error.message;
+            result.className="error";
+            result.innerHTML=error.message;
 
         },
 
@@ -140,6 +160,43 @@ function getLocation() {
         }
 
     );
+
+}
+
+async function copyCoordinates(){
+
+    if(!coordinates)
+        return;
+
+    try{
+
+        await navigator.clipboard.writeText(coordinates);
+
+        const btn=document.getElementById("copyBtn");
+        btn.innerHTML="✅ Copied!";
+
+        setTimeout(()=>{
+            btn.innerHTML="📋 Copy Coordinates";
+        },2000);
+
+    }
+    catch{
+
+        // Fallback para sa ibang browser
+        const text=document.createElement("textarea");
+        text.value=coordinates;
+        document.body.appendChild(text);
+        text.select();
+        document.execCommand("copy");
+        document.body.removeChild(text);
+
+        const btn=document.getElementById("copyBtn");
+        btn.innerHTML="✅ Copied!";
+
+        setTimeout(()=>{
+            btn.innerHTML="📋 Copy Coordinates";
+        },2000);
+    }
 
 }
 
